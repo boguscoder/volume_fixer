@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.IBinder
 
 class TvVolumeService : Service() {
@@ -34,12 +33,7 @@ class TvVolumeService : Service() {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SHUTDOWN)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(powerReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            @Suppress("UnspecifiedRegisterReceiverFlag")
-            registerReceiver(powerReceiver, filter)
-        }
+        registerReceiver(powerReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -50,22 +44,14 @@ class TvVolumeService : Service() {
 
     private fun buildNotification(): Notification {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            nm.createNotificationChannel(
-                NotificationChannel(
-                    CHANNEL_ID,
-                    "TV Volume",
-                    NotificationManager.IMPORTANCE_LOW
-                )
+        nm.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ID,
+                "TV Volume",
+                NotificationManager.IMPORTANCE_LOW
             )
-        }
-        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(this, CHANNEL_ID)
-        } else {
-            @Suppress("DEPRECATION")
-            Notification.Builder(this)
-        }
-        return builder
+        )
+        return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("TV Volume")
             .setContentText("Setting TV volume on screen-off")
             .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off)

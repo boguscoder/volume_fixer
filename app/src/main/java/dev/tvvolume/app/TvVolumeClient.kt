@@ -5,7 +5,6 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Process
 import android.util.Log
 import android.util.Xml
@@ -97,21 +96,11 @@ object TvVolumeClient {
 
     fun hasUsageAccess(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appOps.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
-                context.packageName
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            appOps.checkOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
-                context.packageName
-            )
-        }
-        return mode == AppOpsManager.MODE_ALLOWED
+        return appOps.unsafeCheckOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            Process.myUid(),
+            context.packageName
+        ) == AppOpsManager.MODE_ALLOWED
     }
 
     fun foregroundPackage(context: Context): String? {
@@ -239,7 +228,7 @@ object TvVolumeClient {
                     "MAN: \"ns=01\"\r\n" +
                     "MX: 2\r\n" +
                     "ST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n" +
-                    "USER-AGENT: VolumeReset/1.0 UPnP/1.1\r\n\r\n"
+                    "USER-AGENT: TVVolume/1.0 UPnP/1.1\r\n\r\n"
                 ).toByteArray(Charsets.UTF_8)
             val target = InetSocketAddress("239.255.255.250", 1900)
             val candidates = mutableListOf<Pair<String, String>>()
@@ -262,9 +251,9 @@ object TvVolumeClient {
                     }
                 }
             }
-            Log.i(TAG, "Discovery saw ${candidates.size} renderer(s)")
+            Log.i(TAG, "Discovery saw " + candidates.size + " renderer(s)")
             val picked = pick(candidates) ?: return null
-            Log.i(TAG, "Using TV at $picked")
+            Log.i(TAG, "Using TV at " + picked)
             return findControlUrl(picked)
         } catch (e: Exception) {
             Log.w(TAG, "Discovery failed: " + e.message)
@@ -340,8 +329,7 @@ object TvVolumeClient {
     }
 
 
-    private fun postSetVolume(control: String, volume: Int): Boolean {
-        val body =
+    private fun postSetVolume(control: String, volume: Int): Boolean {        val body =
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                 "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                 "s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" +

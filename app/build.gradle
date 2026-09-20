@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.diffplug.spotless'
 }
 
 android {
@@ -9,9 +10,9 @@ android {
 
     defaultConfig {
         applicationId "dev.tvvolume.app"
-        minSdk 21
+        minSdk 34
         targetSdk 34
-        versionCode 20
+        versionCode 21
         versionName "1.0"
     }
 
@@ -27,5 +28,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = '17'
+    }
+}
+
+spotless {
+    kotlin {
+        ktfmt()
+        trimTrailingWhitespace()
+        endWithNewline()
     }
 }

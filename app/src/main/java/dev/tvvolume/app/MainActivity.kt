@@ -3,11 +3,11 @@ package dev.tvvolume.app
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.text.InputType
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
@@ -29,11 +29,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         val svc = Intent(this, TvVolumeService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(svc)
-        } else {
-            startService(svc)
-        }
+        startForegroundService(svc)
         TvVolumeClient.resetToDefault(this)
 
         if (!TvVolumeClient.hasUsageAccess(this)) {
@@ -41,9 +37,7 @@ class MainActivity : Activity() {
         }
 
         val pm = getSystemService(POWER_SERVICE) as PowerManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            !pm.isIgnoringBatteryOptimizations(packageName)
-        ) {
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
             startActivity(
                 Intent(
                     Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
@@ -138,7 +132,8 @@ class MainActivity : Activity() {
         refreshRows()
     }
 
-    private fun fillForeground() {        if (!TvVolumeClient.hasUsageAccess(this)) {
+    private fun fillForeground() {
+        if (!TvVolumeClient.hasUsageAccess(this)) {
             Toast.makeText(this, "Grant Usage Access first", Toast.LENGTH_SHORT).show()
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
             return
@@ -162,7 +157,7 @@ class MainActivity : Activity() {
                 text = pkg
                 textSize = 14f
                 isSingleLine = true
-                ellipsize = android.text.TextUtils.TruncateAt.END
+                ellipsize = TextUtils.TruncateAt.END
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             })
             val value = TextView(this).apply {
